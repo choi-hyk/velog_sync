@@ -1,3 +1,5 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 # velog-sync
 
 Velog 글을 **GraphQL(Graph Query Language) API** 로 가져와 **시리즈별 폴더/Markdown** 으로 저장합니다.

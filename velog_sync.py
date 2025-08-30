@@ -176,6 +176,9 @@ def save_posts(posts_dict: dict) -> None:
             content += post["body"]
             post_file.write_text(content, encoding="utf-8")
 
-if __name__ == "__main__":
+def main():
     velog_posts = get_posts()
     save_posts(velog_posts)
+    
+if __name__ == "__main__":
+    main()

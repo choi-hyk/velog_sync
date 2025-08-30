@@ -11,7 +11,7 @@ if not USER_NAME:
     raise ValueError("VELOG_USERNAME 환경 변수를 설정해야 합니다.")
 LIMIT = 20
 UNSERIZED = "unserized"
-OUTPUT_DIR = "velog_posts"
+OUTPUT_DIR = "."
 _INVALID = r'[<>:"/\\|?*\uFF5C]'
 
 def sanitize(name: str, max_len: int = 120) -> str:
@@ -169,8 +169,8 @@ def save_posts(posts_dict: dict) -> None:
             content = ""
             post_file = series_dir / f"{sanitize(post['title'])}.md"
             tag_table = make_tags_table(post["tags"])
-            content += f"[Velog로 가기](https://velog.io/@{USER_NAME}/{post['url_slug']})\n"
-            content += f"released at {format_kst(post['released_at'])}\n"
+            content += f"[Velog로 가기](https://velog.io/@{USER_NAME}/{post['url_slug']})\n\n"
+            content += f"released at {format_kst(post['released_at'])}\n\n"
             content += f"updated at {format_kst(post['updated_at'])}\n\n"
             content += f"{tag_table}"
             content += post["body"]
@@ -179,6 +179,6 @@ def save_posts(posts_dict: dict) -> None:
 def main():
     velog_posts = get_posts()
     save_posts(velog_posts)
-    
+
 if __name__ == "__main__":
     main()

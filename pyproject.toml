@@ -1,6 +1,6 @@
 [project]
 name = "velog_sync"
-version = "0.1.4"
+version = "0.1.5"
 description = "Velog 글을 Markdown으로 백업 (시리즈별 폴더) — velog_sync PyPI 패키지 실행"
 readme = "README.md"
 requires-python = ">=3.10"

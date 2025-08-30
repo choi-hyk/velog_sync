@@ -174,7 +174,7 @@ def make_tags_table(tags: list) -> str:
         for_url_tag = tag.strip()
         for_url_tag = re.sub(r"\s+", "-", for_url_tag)
         content += f"[{origin_tag}](https://velog.io/tags/{for_url_tag})|"
-    content += "|" + len(tags) * "----|\n\n"
+    content += "\n|" + len(tags) * "----|\n\n"
     return content
 
 

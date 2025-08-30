@@ -6,9 +6,14 @@ Velog 글을 **GraphQL(Graph Query Language) API(Application Programming Interfa
 ## 요구 사항
 
 -   Python 3.10+
--   의존성: `requests`, `tzdata` (Windows의 `zoneinfo`용)
 
 > `pyproject.toml`은 단일 모듈(루트의 `velog_sync.py`)을 패키징하도록 설정되어 있습니다.
+
+## 설치
+
+```bash
+pip install velog-sync
+```
 
 ## 실행
 
@@ -18,21 +23,21 @@ Velog 글을 **GraphQL(Graph Query Language) API(Application Programming Interfa
 
 ```bash
 export VELOG_USERNAME=user-name
-python -m velog_sync
+velog-sync
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
 $env:VELOG_USERNAME = "user-name"
-python -m velog_sync
+velog-sync
 ```
 
 ### Windows (CMD)
 
 ```bat
 set VELOG_USERNAME=user-name
-python -m velog_sync
+velog-sync
 ```
 
 ## 출력 구조

@@ -1,7 +1,7 @@
 # velog-sync
 
-Velog 글을 **GraphQL(Graph Query Language) API(Application Programming Interface)** 로 가져와 **시리즈별 폴더/Markdown(.md)** 로 저장합니다.
-작성/수정 시각은 **KST(Korea Standard Time)** 로 변환해 파일에 함께 기록됩니다.
+Velog 글을 **GraphQL(Graph Query Language) API** 로 가져와 **시리즈별 폴더/Markdown** 으로 저장합니다.
+작성/수정 시각은 **KST** 로 변환해 파일에 함께 기록됩니다.
 
 # GitHub Actions
 

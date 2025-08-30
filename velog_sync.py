@@ -1,18 +1,19 @@
 import os
 from pathlib import Path
 from datetime import datetime
-from zoneinfo import ZoneInfo  
+from zoneinfo import ZoneInfo
 import requests
 import re
 
 ENDPOINT = "https://v2.velog.io/graphql"
-USER_NAME = os.getenv("VELOG_USERNAME") 
+USER_NAME = os.getenv("VELOG_USERNAME")
 if not USER_NAME:
     raise ValueError("VELOG_USERNAME 환경 변수를 설정해야 합니다.")
 LIMIT = 20
 UNSERIZED = "unserized"
 OUTPUT_DIR = "."
 _INVALID = r'[<>:"/\\|?*\uFF5C]'
+
 
 def sanitize(name: str, max_len: int = 120) -> str:
     """
@@ -29,11 +30,12 @@ def sanitize(name: str, max_len: int = 120) -> str:
     Returns:
         str: 변환된 문자열
     """
-    s = re.sub(r"-{2,}", "-", name)             
-    s = re.sub(_INVALID, "-", s)       
+    s = re.sub(r"-{2,}", "-", name)
+    s = re.sub(_INVALID, "-", s)
     s = s.strip(" .-_")
 
     return s[:max_len]
+
 
 def format_kst(iso_str: str | None) -> str:
     """
@@ -50,7 +52,8 @@ def format_kst(iso_str: str | None) -> str:
     dt_utc = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
     dt_kst = dt_utc.astimezone(ZoneInfo("Asia/Seoul"))
     return dt_kst.strftime("%Y-%m-%d %H:%M:%S %Z")
-    
+
+
 def gql(query: str, variables: dict | None = None) -> dict:
     """
     GraphQL 쿼리를 실행하는 함수
@@ -71,6 +74,20 @@ def gql(query: str, variables: dict | None = None) -> dict:
         raise RuntimeError(f"GraphQL 오류: {msgs}")
     return data["data"]
 
+
+PROFILE_QUERY = """
+query UserProfile($username: String!) {
+    user(username: $username) {
+        id
+        username
+        profile {
+            display_name
+            thumbnail
+        }
+    }
+}
+"""
+
 LIST_QUERY = """
 query Posts($username: String!, $limit: Int!, $cursor: ID) {
     posts(username: $username, limit: $limit, cursor: $cursor) {
@@ -78,7 +95,7 @@ query Posts($username: String!, $limit: Int!, $cursor: ID) {
         url_slug
     }
 }
-""" 
+"""
 
 DETAIL_QUERY = """
 query ReadPost($username: String!, $slug: String!) {
@@ -86,15 +103,18 @@ query ReadPost($username: String!, $slug: String!) {
         id
         url_slug
         title
+        thumbnail
         tags
         series { name }
         released_at
         updated_at
         is_markdown
         body
+        likes
     }
 }
 """
+
 
 def get_slug() -> list[dict]:
     """
@@ -106,12 +126,15 @@ def get_slug() -> list[dict]:
     cursor = None
     slugs = []
     while True:
-        data = gql(LIST_QUERY, {"username": USER_NAME, "limit": LIMIT, "cursor": cursor})
+        data = gql(
+            LIST_QUERY, {"username": USER_NAME, "limit": LIMIT, "cursor": cursor}
+        )
         slugs.extend(data["posts"])
         if len(data["posts"]) < LIMIT:
             break
         cursor = slugs[-1]["id"]
     return slugs
+
 
 def get_posts() -> dict[str, list[dict]]:
     """
@@ -132,6 +155,7 @@ def get_posts() -> dict[str, list[dict]]:
             posts_dict.setdefault(UNSERIZED, []).append(post)
     return posts_dict
 
+
 def make_tags_table(tags: list) -> str:
     """_summary_
     tag를 마크다운 형식의 테이블로 만드는 함수
@@ -144,14 +168,15 @@ def make_tags_table(tags: list) -> str:
     """
     if not tags:
         return ""
-    tag_underline = "|" + len(tags) * "----|"
-    tag_box = "|"
+    content = "|"
     for tag in tags:
         origin_tag = tag
         for_url_tag = tag.strip()
         for_url_tag = re.sub(r"\s+", "-", for_url_tag)
-        tag_box += f"[{origin_tag}](https://velog.io/tags/{for_url_tag})|"
-    return tag_box + "\n" + tag_underline + "\n\n"
+        content += f"[{origin_tag}](https://velog.io/tags/{for_url_tag})|"
+    content += "|" + len(tags) * "----|\n\n"
+    return content
+
 
 def save_posts(posts_dict: dict) -> None:
     """
@@ -169,16 +194,66 @@ def save_posts(posts_dict: dict) -> None:
             content = ""
             post_file = series_dir / f"{sanitize(post['title'])}.md"
             tag_table = make_tags_table(post["tags"])
-            content += f"[Velog로 가기](https://velog.io/@{USER_NAME}/{post['url_slug']})\n\n"
+            content += (
+                f"[Velog로 가기](https://velog.io/@{USER_NAME}/{post['url_slug']})\n\n"
+            )
             content += f"released at {format_kst(post['released_at'])}\n\n"
             content += f"updated at {format_kst(post['updated_at'])}\n\n"
             content += f"{tag_table}"
             content += post["body"]
             post_file.write_text(content, encoding="utf-8")
 
+
+def make_series_table(posts_dict: dict[str, list[dict]]) -> str:
+    """
+    시리즈 표 생성 (로컬 생성 디렉터리로 링크)
+    | 시리즈 | 포스트 수 | 경로 |
+
+    Args:
+        posts_dict (dict[str, list[dict]]): 포스트 정보를 포함하는 딕셔너리
+
+    Return:
+        content (str): 마크다운 형식의 시리즈 표
+    """
+    content = "| 시리즈 | 포스트 수 |\n"
+    content += "|---|---:|\n"
+
+    for series_name, posts in posts_dict.items():
+        dir_name = re.sub(r"\s+", "%20", series_name)
+        path_link = f"./{dir_name}/"
+        count = len(posts)
+        content += f"| [{series_name}]({path_link}) | {count} |\n"
+
+    return content
+
+
+def save_profile(user_data: dict, velog_posts: dict) -> None:
+    """
+    사용자의 Velog 프로필 정보를 저장하는 함수
+
+    Args:
+        user_data (dict): 사용자의 Velog 프로필 정보를 포함하는 딕셔너리
+        velog_posts (dict): 사용자의 Velog 포스트 정보를 포함하는 딕셔너리
+    """
+    base = Path(OUTPUT_DIR)
+    base.mkdir(parents=True, exist_ok=True)
+    profile_file = base / "README.md"
+    content = f"# {user_data['profile']['display_name']}\n\n"
+    content += (
+        f'<img src="{user_data["profile"]["thumbnail"]}" alt="{user_data["profile"]["display_name"]}" '
+        f'style="width:120px;height:120px;border-radius:50%;object-fit:cover;" />\n\n'
+    )
+    series_table = make_series_table(velog_posts)
+    content += series_table
+    profile_file.write_text(content, encoding="utf-8")
+
+
 def main():
     velog_posts = get_posts()
     save_posts(velog_posts)
+    user_data = gql(PROFILE_QUERY, {"username": USER_NAME})
+    save_profile(user_data["user"], velog_posts)
+
 
 if __name__ == "__main__":
     main()

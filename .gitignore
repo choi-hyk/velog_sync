@@ -1,0 +1,6 @@
+/.venv
+/velog_posts
+/dist
+/build
+/*.egg-info/
+__pycache__/

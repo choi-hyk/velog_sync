@@ -1,0 +1,21 @@
+[project]
+name = "velog_sync"
+version = "0.1.0"
+description = "Velog 글을 Markdown으로 백업 (시리즈별 폴더) — velog_sync PyPI 패키지 실행"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "choi-hyk", email = "blindlchoil@gmail.com" }]
+dependencies = [
+  "requests>=2.32.0",
+  "tzdata>=2024.1"   
+]
+
+[project.scripts]
+velog-sync = "velog_sync:main"
+
+[tool.setuptools]
+py-modules = ["velog_sync"]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"

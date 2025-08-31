@@ -36,11 +36,6 @@ jobs:
                   python -m pip install --upgrade pip
                   pip install velog-sync
 
-            - name: Run velog-sync
-              env:
-                  VELOG_USERNAME: ${{ vars.VELOG_USERNAME }}
-              run: velog-sync
-
             - name: Configure Git
               run: |
                   git config user.name "github-actions[bot]"
@@ -48,7 +43,12 @@ jobs:
 
             - name: Rebase with remote main
               run: |
-                  git pull --rebase --autostash origin main
+                  git pull --rebase origin main
+
+            - name: Run velog-sync
+              env:
+                  VELOG_USERNAME: ${{ vars.VELOG_USERNAME }}
+              run: velog-sync
 
             - name: Commit if changed
               env:

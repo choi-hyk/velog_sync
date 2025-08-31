@@ -57,7 +57,7 @@ jobs:
                   if [ -n "$(git status --porcelain)" ]; then
                     DATE_KST="$(date +'%Y-%m-%d %H:%M:%S %Z')"
                     git add -A
-                    git commit -m "chore: velog sync @ ${DATE_KST}"
+                    git commit -m "velog sync @ ${DATE_KST}"
                     git push
                   else
                     echo "No changes to commit."

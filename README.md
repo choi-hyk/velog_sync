@@ -120,4 +120,10 @@ velog-sync
 -   `released at`, `updated at` (KST)
 -   태그 테이블(클릭 시 velog 태그 페이지로 이동)
 
+## Contact
+
+-   Email: blindlchoil@gmail.com
+-   GitHub: https://github.com/choi-hyk/velog_sync
+-   PyPI: https://pypi.org/project/velog-sync/
+
 문의/개선 제안은 이슈로 남겨주세요.
